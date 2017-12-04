@@ -2,16 +2,37 @@ version: "3"
 
 services:
   web:
-    image: "${DOCKER_IMAGE}"
+    image: "${DOCKER_IMAGE}:${DOCKER_TAG}"
     command:
-      - --docker
-      - --docker.endpoint=unix:///var/run/docker.sock
-      - --docker.domain="${DOCKER_DOMAIN}"
-      - --docker.watch=true
-      - --docker.swarmmode=true
-      - --docker.exposedbydefault=false
-      - --logLevel=DEBUG
-      - --web
+      - "--accesslog.format=common"
+      - "--acme"
+      - "--acme.acmelogging=true"
+      - "--acme.email=${ACME_EMAIL}"
+      - "--acme.entryPoint=https"
+      - "--acme.onhostrule=true"
+      - "--acme.storage=/acme.json"
+      - "--api"
+      - "--api.dashboard=true"
+      - "--api.entryPoint=traefik"
+      - "--checkNewVersion=true"
+      - "--debug"
+      - "--defaultEntryPoints=https,http"
+      - "--docker"
+      - "--docker.domain=${DOCKER_DOMAIN}"
+      - "--docker.endpoint=unix:///var/run/docker.sock"
+      - "--docker.exposedbydefault=false"
+      - "--docker.swarmmode=true"
+      - "--docker.watch=true"
+      - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
+      - "--entrypoints=Name:https Address::443 TLS"
+      - "--entrypoints=Name:traefik Address::8080"
+      - "--entrypoints=Name:ping Address::8082"
+      - "--logLevel=DEBUG"
+      - "--ping"
+      - "--ping.entryPoint=traefik"
+      - "--rest"
+      - "--rest.entryPoint=traefik"
+      - "--retry"
     ports:
       - 80:80
       - 443:443
@@ -19,7 +40,6 @@ services:
       - web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/traefik/traefik.toml:/traefik.toml
       - /opt/traefik/acme.json:/acme.json
     deploy:
       replicas: 1
@@ -29,12 +49,17 @@ services:
       restart_policy:
         condition: any
       labels:
-        - "traefik.docker.network=traefik_web"
-        - "traefik.port=8080"
-        - "traefik.enable=true"
+        - "traefik.default.healthcheck.path=/health"
+        - "traefik.default.healthcheck.interval=10s"
         - "traefik.default.protocol=http"
+        - "traefik.docker.network=traefik_web"
+        - "traefik.enable=true"
         - "traefik.frontend.rule=Host:traefik.${DOCKER_DOMAIN}"
+        - "traefik.port=8080"
 
 networks:
   web:
     driver: overlay
+
+volumes:
+  acme:

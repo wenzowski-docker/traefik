@@ -18,12 +18,16 @@ export $(shell sed 's/=.*//' .env)
 DOCKER_STACK ?= traefik
 
 # Image name can be overidden with env var.
-DOCKER_IMAGE ?= wenzowski/$(DOCKER_STACK)
+DOCKER_IMAGE ?= docker-hub-user/$(DOCKER_STACK)
 export DOCKER_IMAGE
 
 # Domain name can be overidden with env var.
-DOCKER_DOMAIN ?= wenzowski.com
+DOCKER_DOMAIN ?= example.com
 export DOCKER_DOMAIN
+
+# Acme email can be overidden with env var.
+ACME_EMAIL ?= test@example.com
+export ACME_EMAIL
 
 # Get the latest commit.
 GIT_COMMIT = $(strip $(shell git rev-parse --short HEAD))
@@ -61,6 +65,7 @@ else
 # Add the commit ref for development builds. Mark as dirty if the working directory isn't clean
 DOCKER_TAG = $(CODE_VERSION)-$(GIT_COMMIT)$(DOCKER_TAG_SUFFIX)
 endif
+export DOCKER_TAG
 
 SOURCES := $(shell find . -name '*.go')
 
@@ -83,6 +88,9 @@ docker_push:
 
 docker_deploy:
 	docker stack deploy --compose-file docker-compose.yml $(DOCKER_STACK)
+
+printenv:
+	printenv
 
 output:
 	@echo Docker Image: $(DOCKER_IMAGE):$(DOCKER_TAG)

@@ -35,3 +35,4 @@ See Also
 ========
 - https://raw.githubusercontent.com/containous/traefik/master/traefik.sample.toml
 - https://github.com/containous/traefik/wiki/Awesome-Traefik
+- https://github.com/containous/traefik/blob/master/examples/cluster/docker-compose.yml
