@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  web:
+    image: "${DOCKER_IMAGE}"
+    command:
+      - --docker
+      - --docker.endpoint=unix:///var/run/docker.sock
+      - --docker.domain="${DOCKER_DOMAIN}"
+      - --docker.watch=true
+      - --docker.swarmmode=true
+      - --docker.exposedbydefault=false
+      - --logLevel=DEBUG
+      - --web
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/traefik/traefik.toml:/traefik.toml
+      - /opt/traefik/acme.json:/acme.json
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.docker.network=traefik_web"
+        - "traefik.port=8080"
+        - "traefik.enable=true"
+        - "traefik.default.protocol=http"
+        - "traefik.frontend.rule=Host:traefik.${DOCKER_DOMAIN}"
+
+networks:
+  web:
+    driver: overlay
