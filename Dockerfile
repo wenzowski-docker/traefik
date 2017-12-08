@@ -7,7 +7,7 @@ FROM traefik:$VERSION
 MAINTAINER Alec Wenzowski "alec@wenzowski.com"
 
 HEALTHCHECK --interval=1s --timeout=1s --retries=60 \
-  CMD ["/traefik", "healthcheck", "--web"]
+  CMD ["/traefik", "healthcheck", "--ping"]
 
 # Metadata
 LABEL org.label-schema.schema-version="1.0" \
