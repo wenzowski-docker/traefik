@@ -60,6 +60,8 @@ services:
 networks:
   web:
     driver: overlay
+    driver_opts:
+      encrypted: 1
 
 volumes:
   acme:
